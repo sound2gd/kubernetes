@@ -176,12 +176,10 @@ func main() {
 ## Healthchecking
 
 ### With Sidecar
-
-The healthchecking sidecar exposes `/health` as a http endpoint and calls the rpc endpoint `Debug.Health` on a service.
+ The healthchecking sidecar exposes `/health` as a http endpoint and calls the rpc endpoint `Debug.Health` on a service.
 Every go-micro service has a built in Debug.Health endpoint.
 
 #### Install
-
 ```
 go get github.com/micro/kubernetes/cmd/health
 ```
@@ -210,7 +208,7 @@ curl http://localhost:8080/health
 
 Add the healthchecking sidecar to a kubernetes deployment
 
-```
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -254,10 +252,55 @@ spec:
             periodSeconds: 3
 ```
 ### With Probe
+Health Probe utility allows you to query health of go-micro services. Meant to be used for health checking micro services in [Kubernetes](https://kubernetes.io/), using the [exec probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#define-a-liveness-command).
 
+#### Using as base image
+We provide `microhq/probe:kubernetes` to use it as base image to avoid extra necessary steps 
+```dockerfile
+FROM microhq/probe:kubernetes
+ADD greeter-srv /greeter-srv
+ENTRYPOINT [ "/greeter-srv" ]
+```
 
+#### K8s Deployment
+In your Kubernetes Pod specification manifest, specify a `livenessProbe` and/or `readinessProbe` for the container:
 
-## Healthchecking Sidecar
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: default
+  name: greeter
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: greeter-srv
+    spec:
+      containers:
+        - name: greeter
+          command: [
+            "/greeter-srv",
+            "--server_address=0.0.0.0:8080",
+            "--broker_address=0.0.0.0:10001"
+          ]
+          image: microhq/greeter-srv:kubernetes
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8080
+            name: greeter-port
+          livenessProbe:
+            exec:
+              initialDelaySeconds: 5
+              periodSeconds: 3
+              command: [
+                "/probe",
+                "--server_name=greeter",
+                "--server_address=0.0.0.0:8080"
+              ]
+```
+
 
 ## Load Balancing
 
@@ -267,7 +310,7 @@ In **micro on kubernetes** we offload load balancing to k8s by using the [static
 Rather than doing address resolution, the static selector returns the service name plus a fixed port e.g greeter returns greeter:8080.
 Read about the [static selector](https://github.com/micro/go-plugins/tree/master/selector/static).
 
-This approach handles both initial connection load balancing and health checks since Kubernetes services stop routing traffic to unhealthy services, but if you want to use long lived connections such as the ones in gRPC protocol, a service-mesh like [Conduit](https://conduit.io/), [Istio](https://istio.io) and [Linkerd](https://linkerd.io/) should be prefered to handle service discovery, routing and failure.
+This approach handles both initial connection load balancing and health checks since Kubernetes services stop routing traffic to unhealthy services, but if you want to use long lived connections such as the ones in gRPC protocol, a service-mesh like [Conduit](https://conduit.io/), [Istio](https://istio.io) and [Linkerd](https://linkerd.io/) should be preferred to handle service discovery, routing and failure.
 
 Note: The static selector is enabled by default.
 
