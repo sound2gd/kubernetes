@@ -19,17 +19,32 @@ provides a kubernetes native runtime to help build micro services.
 
 ## Getting Started
 
-- [Installing Micro](#installing-micro)
-- [Writing a Service](#writing-a-service)
-- [Deploying a Service](#deploying-a-service)
-- [Writing a Web Service](#writing-a-web-service)
-- [Healthchecking](#healthchecking-sidecar)
-- [Load Balancing](#load-balancing)
-- [Using Service Mesh](#using-service-mesh)
-- [Using Config Map](#using-config-map)
-- [Contribute](#contribute)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Getting Started](#getting-started)
+  - [Installing Micro](#installing-micro)
+  - [Writing a Service](#writing-a-service)
+  - [Deploying a Service](#deploying-a-service)
+    - [Create a Deployment](#create-a-deployment)
+    - [Create a Service](#create-a-service)
+  - [Writing a Web Service](#writing-a-web-service)
+  - [Healthchecking](#healthchecking)
+    - [Install](#install)
+    - [Run](#run)
+    - [K8s Deployment](#k8s-deployment)
+  - [Load Balancing](#load-balancing)
+    - [Usage](#usage)
+    - [Deployment](#deployment)
+    - [Service](#service)
+  - [Using Service Mesh](#using-service-mesh)
+  - [Using Config Map](#using-config-map)
+    - [Example](#example)
+  - [Contribute](#contribute)
+    - [TODO](#todo)
 
 ## Installing Micro
+
+
 
 
 ```
@@ -158,12 +173,14 @@ func main() {
 }
 ```
 
-## Healthchecking Sidecar
+## Healthchecking
+
+### With Sidecar
 
 The healthchecking sidecar exposes `/health` as a http endpoint and calls the rpc endpoint `Debug.Health` on a service.
 Every go-micro service has a built in Debug.Health endpoint.
 
-### Install
+#### Install
 
 ```
 go get github.com/micro/kubernetes/cmd/health
@@ -175,7 +192,7 @@ or
 docker pull microhq/health:kubernetes
 ```
 
-### Run
+#### Run
 
 Run e.g healthcheck greeter service with address localhost:9091
 
@@ -189,7 +206,7 @@ Call the healthchecker on localhost:8080
 curl http://localhost:8080/health
 ```
 
-### K8s Deployment
+#### K8s Deployment
 
 Add the healthchecking sidecar to a kubernetes deployment
 
@@ -236,6 +253,11 @@ spec:
             initialDelaySeconds: 3
             periodSeconds: 3
 ```
+### With Probe
+
+
+
+## Healthchecking Sidecar
 
 ## Load Balancing
 
