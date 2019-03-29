@@ -4,7 +4,7 @@ package micro
 import (
 	"github.com/micro/go-grpc"
 	"github.com/micro/go-micro"
-	"github.com/micro/go-plugins/registry/kubernetes"
+	"github.com/sound2gd/go-plugins/registry/kubernetes"
 
 	// static selector offloads load balancing to k8s services
 	// note: requires user to create k8s services
